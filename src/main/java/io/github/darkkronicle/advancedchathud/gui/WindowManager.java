@@ -34,7 +34,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Style;
 
 @Environment(EnvType.CLIENT)
@@ -109,7 +109,7 @@ public class WindowManager implements IRenderer, ResolutionEventHandler {
     }
 
     @Override
-    public void onRenderGameOverlayPost(MatrixStack matrixStack) {
+    public void onRenderGameOverlayPost(DrawContext matrixStack) {
         boolean isFocused = isChatFocused();
         int ticks = client.inGameHud.getTicks();
         if (!HudConfigStorage.General.RENDER_IN_OTHER_GUI.config.getBooleanValue() && !isFocused && client.currentScreen != null) {

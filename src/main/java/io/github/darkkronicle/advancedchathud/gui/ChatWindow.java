@@ -30,9 +30,8 @@ import lombok.Setter;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -208,16 +207,16 @@ public class ChatWindow {
     }
 
     public static void drawRect(
-            MatrixStack stack, int x, int y, int width, int height, int color) {
-        DrawableHelper.fill(stack, x, y, x + width, y + height, color);
+            DrawContext stack, int x, int y, int width, int height, int color) {
+        stack.fill(x, y, x + width, y + height, color);
     }
 
-    public static void fill(MatrixStack stack, int x, int y, int x2, int y2, int color) {
-        DrawableHelper.fill(stack, x, y, x2, y2, color);
+    public static void fill(DrawContext stack, int x, int y, int x2, int y2, int color) {
+        stack.fill(x, y, x2, y2, color);
     }
 
     private static void drawOutline(
-            MatrixStack stack, int x, int y, int width, int height, int color) {
+            DrawContext stack, int x, int y, int width, int height, int color) {
         drawRect(stack, x, y, 1, height, color);
         drawRect(stack, x + width - 1, y, 1, height, color);
         drawRect(stack, x + 1, y, width - 2, 1, color);
@@ -303,7 +302,7 @@ public class ChatWindow {
         return getTotalLines() * HudConfigStorage.General.LINE_SPACE.config.getIntegerValue() + (lines.size() - 1) * HudConfigStorage.General.MESSAGE_SPACE.config.getIntegerValue();
     }
 
-    public void render(MatrixStack matrixStack, int ticks, boolean focused) {
+    public void render(DrawContext matrixStack, int ticks, boolean focused) {
         if (!focused) {
             resetScroll();
         }
@@ -321,8 +320,8 @@ public class ChatWindow {
             scrolledHeight = totalHeight;
         }
 
-        matrixStack.push();
-        matrixStack.scale((float) getScale(), (float) getScale(), 1);
+        matrixStack.getMatrices().push();
+        matrixStack.getMatrices().scale((float) getScale(), (float) getScale(), 1);
 
         int lines = 0;
         int currentHeight = 0;
@@ -431,9 +430,7 @@ public class ChatWindow {
                     labelWidth,
                     scaledBar,
                     tab.getBorderColor().color());
-            DrawableHelper.drawCenteredTextWithShadow(
-                    matrixStack,
-                    MinecraftClient.getInstance().textRenderer,
+            matrixStack.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer,
                     tab.getAbbreviation(),
                     leftX + (labelWidth) / 2,
                     getActualY(newY - 3),
@@ -477,9 +474,7 @@ public class ChatWindow {
 
             // Close
             RenderUtils.color(1, 1, 1, 1);
-            RenderUtils.bindTexture(X_ICON);
-            DrawableHelper.drawTexture(
-                    matrixStack,
+            matrixStack.drawTexture(X_ICON,
                     rightX - scaledBar + 1,
                     getActualY(newY - 1),
                     scaledBar - 2,
@@ -493,9 +488,7 @@ public class ChatWindow {
 
             // Resize
             RenderUtils.color(1, 1, 1, 1);
-            RenderUtils.bindTexture(RESIZE_ICON);
-            DrawableHelper.drawTexture(
-                    matrixStack,
+            matrixStack.drawTexture(RESIZE_ICON,
                     rightX - scaledBar * 2 + 2,
                     getActualY(newY - 1),
                     scaledBar - 2,
@@ -508,9 +501,7 @@ public class ChatWindow {
                     32);
 
             // Visibility
-            RenderUtils.bindTexture(visibility.getTexture());
-            DrawableHelper.drawTexture(
-                    matrixStack,
+            matrixStack.drawTexture(visibility.getTexture(),
                     rightX - scaledBar * 3 + 3,
                     getActualY(newY - 1),
                     scaledBar - 2,
@@ -525,9 +516,7 @@ public class ChatWindow {
             double mouseX = client.mouse.getX() / 2;
             double mouseY = client.mouse.getY() / 2;
             if (isMouseOverVisibility(mouseX, mouseY)) {
-                DrawableHelper.drawCenteredTextWithShadow(
-                        matrixStack,
-                        client.textRenderer,
+                matrixStack.drawCenteredTextWithShadow(client.textRenderer,
                         visibility.getDisplayName(),
                         (int) (mouseX / getScale() + 4),
                         (int) (mouseY / getScale() - 16),
@@ -557,11 +546,11 @@ public class ChatWindow {
                     10,
                     Colors.getInstance().getColorOrWhite("white").color());
         }
-        matrixStack.pop();
+        matrixStack.getMatrices().pop();
     }
 
     private void drawLine(
-            MatrixStack matrixStack,
+            DrawContext matrixStack,
             ChatMessage.AdvancedChatLine line,
             int x,
             int y,
@@ -667,23 +656,19 @@ public class ChatWindow {
             RenderUtils.setupBlend();
             // Draw head
             RenderSystem.setShaderColor(1, 1, 1, applied);
-            RenderSystem.setShaderTexture(0, line.getParent().getOwner().getTexture());
-            int headX;
+                        int headX;
             if (renderRight) {
                 headX = pRX + 2;
             } else {
                 headX = pLX - 10;
             }
             int headY = getActualY(y);
-            DrawableHelper.drawTexture(
-                    matrixStack, headX, headY, 8, 8, 8, 8, 8, 8, 64, 64);
-            DrawableHelper.drawTexture(
-                    matrixStack, headX, headY, 8, 8, 40, 8, 8, 8, 64, 64);
+            matrixStack.drawTexture(line.getParent().getOwner().getTexture(), headX, headY, 8, 8, 8, 8, 8, 8, 64, 64);
+            matrixStack.drawTexture(line.getParent().getOwner().getTexture(), headX, headY, 8, 8, 40, 8, 8, 8, 64, 64);
             RenderSystem.setShaderColor(1, 1, 1, 1);
         }
 
-        client.textRenderer.drawWithShadow(
-                matrixStack, render.asOrderedText(), renderRight ? pRX - lineWidth : pLX, getActualY(y) + 1, text.color());
+        matrixStack.drawTextWithShadow(client.textRenderer, render.asOrderedText(), renderRight ? pRX - lineWidth : pLX, getActualY(y) + 1, text.color());
     }
 
     public Style getText(double mouseX, double mouseY) {

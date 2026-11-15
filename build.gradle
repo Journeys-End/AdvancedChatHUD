@@ -1,10 +1,9 @@
 plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
+	id 'fabric-loom' version '1.10.5'
 	id 'maven-publish'
-	id "io.freefair.lombok" version "6.0.0-m2"
+	id "io.freefair.lombok" version "8.11"
 }
 
-apply from: 'https://raw.githubusercontent.com/DarkKronicle/GradleScripts/main/gradle/publish.gradle'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
@@ -19,6 +18,7 @@ if (file("extra.properties").exists()) {
 }
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	maven { url 'https://masa.dy.fi/maven' }
 	maven { url 'https://jitpack.io' }
@@ -29,8 +29,10 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation "fi.dy.masa.malilib:malilib-fabric-1.19.4:${project.malilib_version}"
-	modImplementation "com.github.DarkKronicle:AdvancedChatCore:${project.advancedchat_version}"
+	modImplementation "fi.dy.masa.malilib:malilib-fabric-1.20.1:${project.malilib_version}"
+	modImplementation "io.github.darkkronicle:AdvancedChatCore:${project.advancedchat_version}"
+	compileOnly "com.github.DarkKronicle.Konstruct:addons:2.0.3-build1"
+	compileOnly "com.github.DarkKronicle.Konstruct:core:2.0.3-build1"
 }
 
 processResources {
@@ -50,7 +52,7 @@ tasks.withType(JavaCompile).configureEach {
 // if it is present.
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
-	classifier = "sources"
+	archiveClassifier = "sources"
 	from sourceSets.main.allSource
 }
 
